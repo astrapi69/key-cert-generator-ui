@@ -1,0 +1,27 @@
+dependencies {
+
+    izpack libs.izpack.ant
+
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+
+    implementation libs.awt.extensions
+    implementation libs.swing.base.components
+    implementation libs.model.data
+    implementation libs.resourcebundle.core
+    implementation libs.menu.action
+
+    testImplementation libs.commons.text
+    testImplementation libs.file.worker
+    testImplementation libs.gradle.migration.data
+    testImplementation libs.silly.collection
+    testImplementation libs.silly.io
+    testImplementation libs.throwable
+    // Note: use of bundles...
+    testImplementation libs.bundles.unit.testing
+    testRuntimeOnly libs.junit.platform.launcher
+
+}
