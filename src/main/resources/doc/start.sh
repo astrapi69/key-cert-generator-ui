@@ -23,4 +23,4 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-java -jar --add-opens java.base/java.time=ALL-UNNAMED swing-app-ui-template.jar
+java -jar --add-opens java.base/java.time=ALL-UNNAMED key-cert-generator-ui.jar
