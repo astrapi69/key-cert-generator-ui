@@ -24,8 +24,10 @@ silly-collection-version = "27.1"
 silly-io-version = "3.1"
 swing-base-components-version = "4.2"
 throwable-version = "3"
+pf4j-version = "3.12.0"
 
 [libraries]
+pf4j = { module = "org.pf4j:pf4j", version.ref = "pf4j-version" }
 awt-extensions = { module = "io.github.astrapi69:awt-extensions", version.ref = "awt-extensions-version" }
 commons-text = { module = "org.apache.commons:commons-text", version.ref = "commons-text-version" }
 file-worker = { module = "io.github.astrapi69:file-worker", version.ref = "file-worker-version" }

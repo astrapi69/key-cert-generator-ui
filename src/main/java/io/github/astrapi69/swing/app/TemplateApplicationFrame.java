@@ -32,6 +32,14 @@ import io.github.astrapi69.swing.plaf.LookAndFeels;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
+import org.pf4j.DefaultExtensionFinder;
+import org.pf4j.DefaultPluginManager;
+import org.pf4j.ExtensionFinder;
+import org.pf4j.PluginManager;
+import org.pf4j.PluginWrapper;
+
+import javax.swing.JMenuBar;
+import java.util.List;
 
 /**
  * The class {@link TemplateApplicationFrame} represents the main frame of the application that sets
@@ -53,6 +61,9 @@ public class TemplateApplicationFrame extends ApplicationPanelFrame<ApplicationM
 	/** The main application panel */
 	ApplicationPanel applicationPanel;
 
+	/** The plugin manager */
+	PluginManager pluginManager;
+
 	/**
 	 * Constructs a new {@link TemplateApplicationFrame} with the specified title from the resource
 	 * bundle
@@ -60,6 +71,38 @@ public class TemplateApplicationFrame extends ApplicationPanelFrame<ApplicationM
 	public TemplateApplicationFrame()
 	{
 		super(Messages.getString("mainframe.title"));
+	}
+
+	/**
+	 * Factory method for create the plugin manager
+	 */
+	protected PluginManager newPluginManager()
+	{
+		PluginManager pluginManager = new DefaultPluginManager()
+		{
+
+			/**
+			 * {@inheritDoc}
+			 * <p>
+			 * Customizes the extension finder by adding a service provider extension finder
+			 */
+			protected ExtensionFinder createExtensionFinder()
+			{
+				DefaultExtensionFinder extensionFinder = (DefaultExtensionFinder)super.createExtensionFinder();
+				extensionFinder.addServiceProviderExtensionFinder();
+				return extensionFinder;
+			}
+
+		};
+		return pluginManager;
+	}
+
+	/**
+	 * Starts and loads all plugins of the application
+	 */
+	protected void startAndLoadAllPlugins(){
+		pluginManager.loadPlugins();
+		pluginManager.startPlugins();
 	}
 
 	/**
@@ -72,6 +115,7 @@ public class TemplateApplicationFrame extends ApplicationPanelFrame<ApplicationM
 		{
 			instance = this;
 		}
+		pluginManager = newPluginManager();
 		// initialize model and model object
 		ApplicationModelBean applicationModelBean = ApplicationModelBean.builder()
 			.title(Messages.getString("mainframe.title")).build();
@@ -86,9 +130,27 @@ public class TemplateApplicationFrame extends ApplicationPanelFrame<ApplicationM
 	protected void onAfterInitialize()
 	{
 		super.onAfterInitialize();
+		startAndLoadAllPlugins();
+
+		List<Class<?>> extensionClasses = pluginManager.getExtensionClasses("menu-plugin");
+
+
+		List<PluginWrapper> plugins = pluginManager.getPlugins();
+		plugins.forEach(plugin -> {
+			System.out.println("Plugin: " + plugin.getPluginId() + " is in state: " +
+					plugin.getPluginState()
+			);
+		});
+
 		setTitle(Messages.getString("mainframe.title"));
 		setDefaultLookAndFeel(LookAndFeels.NIMBUS, this);
 		this.setSize(ScreenSizeExtensions.getScreenWidth(), ScreenSizeExtensions.getScreenHeight());
+	}
+
+	@Override
+	protected JMenuBar newJMenuBar() {
+
+		return super.newJMenuBar();
 	}
 
 	/**
