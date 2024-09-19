@@ -24,6 +24,30 @@
  */
 package io.github.astrapi69.swing.app;
 
+import java.nio.file.Path;
+import java.util.List;
+
+import javax.swing.JMenuBar;
+
+import org.pf4j.CompoundPluginDescriptorFinder;
+import org.pf4j.CompoundPluginLoader;
+import org.pf4j.CompoundPluginRepository;
+import org.pf4j.DefaultExtensionFinder;
+import org.pf4j.DefaultPluginLoader;
+import org.pf4j.DefaultPluginManager;
+import org.pf4j.DefaultPluginRepository;
+import org.pf4j.ExtensionFinder;
+import org.pf4j.JarPluginLoader;
+import org.pf4j.JarPluginRepository;
+import org.pf4j.ManifestPluginDescriptorFinder;
+import org.pf4j.PluginClassLoader;
+import org.pf4j.PluginDescriptor;
+import org.pf4j.PluginDescriptorFinder;
+import org.pf4j.PluginLoader;
+import org.pf4j.PluginManager;
+import org.pf4j.PluginRepository;
+import org.pf4j.PluginWrapper;
+
 import io.github.astrapi69.awt.screen.ScreenSizeExtensions;
 import io.github.astrapi69.model.BaseModel;
 import io.github.astrapi69.swing.base.ApplicationPanelFrame;
@@ -32,14 +56,7 @@ import io.github.astrapi69.swing.plaf.LookAndFeels;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
-import org.pf4j.DefaultExtensionFinder;
-import org.pf4j.DefaultPluginManager;
-import org.pf4j.ExtensionFinder;
-import org.pf4j.PluginManager;
-import org.pf4j.PluginWrapper;
-
-import javax.swing.JMenuBar;
-import java.util.List;
+import org.pf4j.PropertiesPluginDescriptorFinder;
 
 /**
  * The class {@link TemplateApplicationFrame} represents the main frame of the application that sets
@@ -92,6 +109,31 @@ public class TemplateApplicationFrame extends ApplicationPanelFrame<ApplicationM
 				extensionFinder.addServiceProviderExtensionFinder();
 				return extensionFinder;
 			}
+			@Override
+			protected PluginDescriptorFinder createPluginDescriptorFinder() {
+				return new CompoundPluginDescriptorFinder()
+						.add(new PropertiesPluginDescriptorFinder())
+						.add(new ManifestPluginDescriptorFinder());
+			}
+
+			@Override
+			protected PluginRepository createPluginRepository() {
+				return new CompoundPluginRepository()
+						.add(new DefaultPluginRepository(getPluginsRoot()))
+						.add(new JarPluginRepository(getPluginsRoot()));
+			}
+
+			protected PluginClassLoader createPluginClassLoader(Path pluginPath, PluginDescriptor pluginDescriptor) {
+				return new PluginClassLoader(this, pluginDescriptor, getClass().getClassLoader(), true);
+			}
+			@Override
+			protected PluginLoader createPluginLoader() {
+				PluginLoader superPluginLoader = super.createPluginLoader();
+				return new CompoundPluginLoader()
+						.add(superPluginLoader)
+						.add(new DefaultPluginLoader(this))
+						.add(new JarPluginLoader(this));
+			}
 
 		};
 		return pluginManager;
@@ -100,7 +142,8 @@ public class TemplateApplicationFrame extends ApplicationPanelFrame<ApplicationM
 	/**
 	 * Starts and loads all plugins of the application
 	 */
-	protected void startAndLoadAllPlugins(){
+	protected void startAndLoadAllPlugins()
+	{
 		pluginManager.loadPlugins();
 		pluginManager.startPlugins();
 	}
@@ -137,9 +180,8 @@ public class TemplateApplicationFrame extends ApplicationPanelFrame<ApplicationM
 
 		List<PluginWrapper> plugins = pluginManager.getPlugins();
 		plugins.forEach(plugin -> {
-			System.out.println("Plugin: " + plugin.getPluginId() + " is in state: " +
-					plugin.getPluginState()
-			);
+			System.out.println(
+				"Plugin: " + plugin.getPluginId() + " is in state: " + plugin.getPluginState());
 		});
 
 		setTitle(Messages.getString("mainframe.title"));
@@ -148,7 +190,8 @@ public class TemplateApplicationFrame extends ApplicationPanelFrame<ApplicationM
 	}
 
 	@Override
-	protected JMenuBar newJMenuBar() {
+	protected JMenuBar newJMenuBar()
+	{
 
 		return super.newJMenuBar();
 	}

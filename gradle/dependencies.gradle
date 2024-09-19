@@ -4,6 +4,7 @@ dependencies {
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
+    annotationProcessor libs.pf4j
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
@@ -14,6 +15,9 @@ dependencies {
     implementation libs.resourcebundle.core
     implementation libs.menu.action
     implementation libs.pf4j
+    implementation libs.slf4j.api
+    implementation libs.jul.to.slf4j
+    implementation libs.logback.classic
 
     testImplementation libs.commons.text
     testImplementation libs.file.worker
