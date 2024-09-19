@@ -47,6 +47,9 @@ public class StartApplication
 	 */
 	public static void main(final String[] args)
 	{
+		System.setProperty("pf4j.mode", "development");
+		loadLoggingFile();
+		setupJavaUtilLoggingToSlf4jBridge();
 		TemplateApplicationFrame frame = new TemplateApplicationFrame();
 		while (!frame.isVisible())
 		{
