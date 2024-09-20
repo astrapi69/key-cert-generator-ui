@@ -9,14 +9,14 @@ dependencies {
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
 
+    implementation libs.pf4j
+    implementation libs.slf4j.api
+    implementation libs.jul.to.slf4j
     implementation libs.awt.extensions
     implementation libs.swing.base.components
     implementation libs.model.data
     implementation libs.resourcebundle.core
     implementation libs.menu.action
-    implementation libs.pf4j
-    implementation libs.slf4j.api
-    implementation libs.jul.to.slf4j
     implementation libs.logback.classic
 
     testImplementation libs.commons.text

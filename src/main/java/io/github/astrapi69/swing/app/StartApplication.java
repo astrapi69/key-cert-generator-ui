@@ -48,6 +48,10 @@ public class StartApplication
 	public static void main(final String[] args)
 	{
 		System.setProperty("pf4j.mode", "development");
+		// System.setProperty("pf4j.mode", "deployment");
+		System.setProperty("pf4j.pluginsDir", "plugins");
+		System.setProperty("pf4j.plugins.debug", "true");
+		System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug");
 		loadLoggingFile();
 		setupJavaUtilLoggingToSlf4jBridge();
 		TemplateApplicationFrame frame = new TemplateApplicationFrame();

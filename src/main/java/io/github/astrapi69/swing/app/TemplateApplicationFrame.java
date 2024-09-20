@@ -24,25 +24,18 @@
  */
 package io.github.astrapi69.swing.app;
 
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import javax.swing.JMenuBar;
 
-import org.pf4j.CompoundPluginDescriptorFinder;
-import org.pf4j.CompoundPluginLoader;
 import org.pf4j.CompoundPluginRepository;
 import org.pf4j.DefaultExtensionFinder;
-import org.pf4j.DefaultPluginLoader;
-import org.pf4j.DefaultPluginManager;
 import org.pf4j.DefaultPluginRepository;
 import org.pf4j.ExtensionFinder;
 import org.pf4j.JarPluginLoader;
+import org.pf4j.JarPluginManager;
 import org.pf4j.JarPluginRepository;
-import org.pf4j.ManifestPluginDescriptorFinder;
-import org.pf4j.PluginClassLoader;
-import org.pf4j.PluginDescriptor;
-import org.pf4j.PluginDescriptorFinder;
 import org.pf4j.PluginLoader;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginRepository;
@@ -56,7 +49,7 @@ import io.github.astrapi69.swing.plaf.LookAndFeels;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
-import org.pf4j.PropertiesPluginDescriptorFinder;
+import lombok.extern.java.Log;
 
 /**
  * The class {@link TemplateApplicationFrame} represents the main frame of the application that sets
@@ -64,13 +57,12 @@ import org.pf4j.PropertiesPluginDescriptorFinder;
  */
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Log
 public class TemplateApplicationFrame extends ApplicationPanelFrame<ApplicationModelBean>
 {
 
 	/**
 	 * The single instance of {@link TemplateApplicationFrame}
-	 *
-	 * @return single instance of {@link TemplateApplicationFrame} object
 	 */
 	@Getter
 	private static TemplateApplicationFrame instance;
@@ -95,44 +87,27 @@ public class TemplateApplicationFrame extends ApplicationPanelFrame<ApplicationM
 	 */
 	protected PluginManager newPluginManager()
 	{
-		PluginManager pluginManager = new DefaultPluginManager()
+		JarPluginManager pluginManager = new JarPluginManager(Paths.get("plugins"))
 		{
-
-			/**
-			 * {@inheritDoc}
-			 * <p>
-			 * Customizes the extension finder by adding a service provider extension finder
-			 */
 			protected ExtensionFinder createExtensionFinder()
 			{
 				DefaultExtensionFinder extensionFinder = (DefaultExtensionFinder)super.createExtensionFinder();
 				extensionFinder.addServiceProviderExtensionFinder();
 				return extensionFinder;
 			}
-			@Override
-			protected PluginDescriptorFinder createPluginDescriptorFinder() {
-				return new CompoundPluginDescriptorFinder()
-						.add(new PropertiesPluginDescriptorFinder())
-						.add(new ManifestPluginDescriptorFinder());
-			}
 
 			@Override
-			protected PluginRepository createPluginRepository() {
+			protected PluginRepository createPluginRepository()
+			{
 				return new CompoundPluginRepository()
-						.add(new DefaultPluginRepository(getPluginsRoot()))
-						.add(new JarPluginRepository(getPluginsRoot()));
+					.add(new DefaultPluginRepository(getPluginsRoot()))
+					.add(new JarPluginRepository(getPluginsRoot()));
 			}
 
-			protected PluginClassLoader createPluginClassLoader(Path pluginPath, PluginDescriptor pluginDescriptor) {
-				return new PluginClassLoader(this, pluginDescriptor, getClass().getClassLoader(), true);
-			}
 			@Override
-			protected PluginLoader createPluginLoader() {
-				PluginLoader superPluginLoader = super.createPluginLoader();
-				return new CompoundPluginLoader()
-						.add(superPluginLoader)
-						.add(new DefaultPluginLoader(this))
-						.add(new JarPluginLoader(this));
+			protected PluginLoader createPluginLoader()
+			{
+				return new JarPluginLoader(this);
 			}
 
 		};
@@ -175,14 +150,17 @@ public class TemplateApplicationFrame extends ApplicationPanelFrame<ApplicationM
 		super.onAfterInitialize();
 		startAndLoadAllPlugins();
 
+		log.info("Plugindirectory:\t" + System.getProperty("pf4j.pluginsDir") + "\n");
+
 		List<Class<?>> extensionClasses = pluginManager.getExtensionClasses("menu-plugin");
 
 
 		List<PluginWrapper> plugins = pluginManager.getPlugins();
 		plugins.forEach(plugin -> {
-			System.out.println(
+			log.info(
 				"Plugin: " + plugin.getPluginId() + " is in state: " + plugin.getPluginState());
 		});
+
 
 		setTitle(Messages.getString("mainframe.title"));
 		setDefaultLookAndFeel(LookAndFeels.NIMBUS, this);
@@ -211,6 +189,19 @@ public class TemplateApplicationFrame extends ApplicationPanelFrame<ApplicationM
 	@Override
 	protected BasePanel<ApplicationModelBean> newMainComponent()
 	{
-		return new ApplicationPanel(getModel());
+		applicationPanel = newApplicationPanel();
+		return applicationPanel;
 	}
+
+	/**
+	 * Factory method for create a new {@link ApplicationPanel} object
+	 *
+	 * @return the new {@link ApplicationPanel} object
+	 */
+	protected ApplicationPanel newApplicationPanel()
+	{
+		ApplicationPanel applicationPanel = new ApplicationPanel(getModel());
+		return applicationPanel;
+	}
+
 }
