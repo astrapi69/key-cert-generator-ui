@@ -12,19 +12,21 @@ dependencies {
     implementation libs.pf4j
     implementation libs.slf4j.api
     implementation libs.jul.to.slf4j
+    implementation libs.logback.classic
     implementation libs.awt.extensions
     implementation libs.swing.base.components
     implementation libs.model.data
     implementation libs.resourcebundle.core
     implementation libs.menu.action
-    implementation libs.logback.classic
+    implementation libs.jobj.core
+    implementation libs.jobj.reflect
+    implementation libs.file.worker
+    implementation libs.throwable
 
     testImplementation libs.commons.text
-    testImplementation libs.file.worker
     testImplementation libs.gradle.migration.data
     testImplementation libs.silly.collection
     testImplementation libs.silly.io
-    testImplementation libs.throwable
     // Note: use of bundles...
     testImplementation libs.bundles.unit.testing
     testRuntimeOnly libs.junit.platform.launcher

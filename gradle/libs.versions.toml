@@ -28,8 +28,12 @@ silly-io-version = "3.1"
 slf4j-api-version = "2.0.9"
 swing-base-components-version = "4.2"
 throwable-version = "3"
+jobj-core-version = "9"
+jobj-reflect-version = "2.4"
 
 [libraries]
+jobj-core  = { module = "io.github.astrapi69:jobj-core", version.ref = "jobj-core-version" }
+jobj-reflect  = { module = "io.github.astrapi69:jobj-reflect", version.ref = "jobj-reflect-version" }
 awt-extensions = { module = "io.github.astrapi69:awt-extensions", version.ref = "awt-extensions-version" }
 commons-text = { module = "org.apache.commons:commons-text", version.ref = "commons-text-version" }
 file-worker = { module = "io.github.astrapi69:file-worker", version.ref = "file-worker-version" }

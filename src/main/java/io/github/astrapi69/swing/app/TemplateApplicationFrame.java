@@ -24,8 +24,12 @@
  */
 package io.github.astrapi69.swing.app;
 
+import java.io.File;
+import java.lang.reflect.Method;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.JMenuBar;
 
@@ -42,10 +46,15 @@ import org.pf4j.PluginRepository;
 import org.pf4j.PluginWrapper;
 
 import io.github.astrapi69.awt.screen.ScreenSizeExtensions;
+import io.github.astrapi69.file.create.FileFactory;
+import io.github.astrapi69.file.read.ReadFileExtensions;
+import io.github.astrapi69.file.search.PathFinder;
 import io.github.astrapi69.model.BaseModel;
+import io.github.astrapi69.reflection.InstanceFactory;
 import io.github.astrapi69.swing.base.ApplicationPanelFrame;
 import io.github.astrapi69.swing.base.BasePanel;
 import io.github.astrapi69.swing.plaf.LookAndFeels;
+import io.github.astrapi69.throwable.RuntimeExceptionDecorator;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
@@ -141,6 +150,46 @@ public class TemplateApplicationFrame extends ApplicationPanelFrame<ApplicationM
 		super.onBeforeInitialize();
 	}
 
+	public static Optional<Class<?>> getExtensionClass(PluginManager pluginManager, String pluginId,
+		String extensionClassName)
+	{
+		AtomicReference<Optional<Class<?>>> optionalExtensionClass = new AtomicReference<>(
+			Optional.empty());
+		List<Class<?>> extensionClasses = pluginManager.getExtensionClasses(pluginId);
+
+		extensionClasses.forEach(clazz -> {
+			if (clazz.getName().equals(extensionClassName))
+			{
+				optionalExtensionClass.set(Optional.of(clazz));
+			}
+		});
+		return optionalExtensionClass.get();
+	}
+
+	/**
+	 * Invoke object.
+	 *
+	 * @param method
+	 *            the method
+	 * @param obj
+	 *            the obj
+	 * @param args
+	 *            the args
+	 * @return the object
+	 */
+	public static Object invoke(Method method, Object obj, Object... args)
+	{
+		try
+		{
+			return method.invoke(obj, args);
+		}
+		catch (Exception e)
+		{
+			return e;
+		}
+	}
+
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -152,7 +201,35 @@ public class TemplateApplicationFrame extends ApplicationPanelFrame<ApplicationM
 
 		log.info("Plugindirectory:\t" + System.getProperty("pf4j.pluginsDir") + "\n");
 
-		List<Class<?>> extensionClasses = pluginManager.getExtensionClasses("menu-plugin");
+		String extensionClassName = "io.github.astrapi69.menu.pf4j.extension.DesktopMenuExtension";
+		Optional<Class<?>> optionalExtensionClass = getExtensionClass(pluginManager,
+			"swing-menu-pf4j-plugin", extensionClassName);
+		optionalExtensionClass.ifPresent(extensionClass -> {
+
+			Object extensionInstance = InstanceFactory.newInstance(extensionClass);
+			Method[] declaredMethods = extensionClass.getDeclaredMethods();
+
+			Method buildMenuBarMethod = null;
+			for (Method method : declaredMethods)
+			{
+				Class<?>[] parameterTypes = method.getParameterTypes();
+				if (method.getName().equals("buildMenuBar") && method.getParameterCount() == 1
+					&& parameterTypes[0] == String.class)
+				{
+					buildMenuBarMethod = method;
+					break;
+				}
+			}
+
+			String filename = "app-tree-menubar.xml";
+			File xmlFile = FileFactory.newFileQuietly(PathFinder.getSrcMainResourcesDir(),
+				filename);
+			String xml = RuntimeExceptionDecorator
+				.decorate(() -> ReadFileExtensions.fromFile(xmlFile));
+			Object invoke = invoke(buildMenuBarMethod, extensionInstance, xml);
+			final JMenuBar jMenuBar = (JMenuBar)invoke;
+			setJMenuBar(jMenuBar);
+		});
 
 
 		List<PluginWrapper> plugins = pluginManager.getPlugins();
